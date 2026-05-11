@@ -1,0 +1,148 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+}
+
+enum LoadSection {
+  MERMA
+  DONACION
+  REFRIGERIO
+}
+
+enum LoadUnit {
+  GRAMOS
+  KILOGRAMOS
+  LITROS
+  UNIDAD
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String         // bcrypt hash
+  name          String
+  role          Role           @default(EMPLOYEE)
+  isActive      Boolean        @default(true)
+
+  // Relaciones
+  branchId      String?
+  branch        Branch?        @relation(fields: [branchId], references: [id])
+  refreshTokens RefreshToken[]
+  dailyLoads    DailyLoad[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("users")
+}
+
+model Branch {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  address    String?
+  isActive   Boolean     @default(true)
+
+  users      User[]
+  dailyLoads DailyLoad[]
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("branches")
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  code        String     @unique         // Código interno del producto
+  name        String                     // Nombre del producto
+  description String?                    // Descripción detallada
+  label       String?                    // Etiqueta asociada
+  barcode     String?    @unique         // Código de barras (EAN/UPC)
+  isActive    Boolean    @default(true)
+
+  loadItems LoadItem[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("products")
+}
+
+model ProductState {
+  id        String      @id @default(cuid())
+  name      String
+  section   LoadSection? // null = aplica a todas las secciones
+  isActive  Boolean     @default(true)
+
+  // Relaciones
+  loadItems LoadItem[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([name, section])
+  @@map("product_states")
+}
+
+model DailyLoad {
+  id       String   @id @default(cuid())
+  date     DateTime @db.Date
+  isClosed Boolean  @default(false)
+
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  branchId String
+  branch   Branch   @relation(fields: [branchId], references: [id])
+  items    LoadItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("daily_loads")
+}
+
+model LoadItem {
+  id          String      @id @default(cuid())
+  section     LoadSection
+  quantity    Float
+  unit        LoadUnit    @default(GRAMOS)
+
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id])
+  stateId     String?     // null para REFRIGERIO (no requiere estado)
+  state       ProductState? @relation(fields: [stateId], references: [id])
+  dailyLoadId String
+  dailyLoad   DailyLoad   @relation(fields: [dailyLoadId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+
+  @@map("load_items")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}

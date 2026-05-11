@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 50% 23%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 50% 23%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 50% 23%;
+    --primary: 207 100% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 86 52% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 215 55% 25%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 207 100% 47%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Azul Luz Azul — fondo muy oscuro */
+    --background: 218 62% 8%;
+    --foreground: 210 40% 92%;
+
+    /* Cards y popovers */
+    --card: 218 55% 12%;
+    --card-foreground: 210 40% 92%;
+    --popover: 218 55% 12%;
+    --popover-foreground: 210 40% 92%;
+
+    /* Celeste Luz Azul */
+    --primary: 197 100% 47%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Verde lima Luz Azul */
+    --secondary: 86 52% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Tonos neutros */
+    --muted: 218 45% 15%;
+    --muted-foreground: 215 20% 60%;
+
+    /* Azul medio para acentos */
+    --accent: 215 55% 30%;
+    --accent-foreground: 210 40% 95%;
+
+    /* Rojo para destructivo */
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Bordes sutiles */
+    --border: 218 40% 18%;
+    --input: 218 40% 18%;
+    --ring: 197 100% 47%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #00AEEF 0%, #1B3764 100%);
+  }
+
+  .gradient-brand {
+    background: linear-gradient(135deg, #1B3764 0%, #00AEEF 50%, #8DC63F 100%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #00AEEF 0%, #8DC63F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animate-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* Fix dropdowns/selects/popovers styling */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
+
+  /* Radix Select/Dropdown content */
+  [role="listbox"],
+  [data-radix-menu-content],
+  [data-radix-select-content] {
+    background: hsl(var(--popover)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+  }
+}
