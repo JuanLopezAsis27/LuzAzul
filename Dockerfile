@@ -23,11 +23,14 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# prisma CLI for `migrate deploy` at deploy time; resolves `prisma/config`
-# from /app/node_modules (the slim standalone bundle omits devDependencies).
-RUN npm install --no-save prisma@7.8.0
+# Isolated Prisma CLI toolchain for `migrate deploy` at deploy time. Installed
+# under its own prefix (a clean npm tree) so it does not clash with the
+# pnpm-structured node_modules in the Next standalone bundle. When migrate runs
+# with `-w /opt/prisma-cli`, `prisma/config` resolves from this directory.
+RUN npm install --prefix /opt/prisma-cli prisma@7.8.0
+COPY --from=builder /app/prisma /opt/prisma-cli/prisma
+COPY --from=builder /app/prisma.config.ts /opt/prisma-cli/prisma.config.ts
 
 USER nextjs
 EXPOSE 3000
