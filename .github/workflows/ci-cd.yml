@@ -44,10 +44,27 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy:
+  check-secrets:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: ${{ secrets.SERVER_HOST != '' }}
+    outputs:
+      has-server: ${{ steps.check.outputs.has-server }}
+    steps:
+      - name: Check deploy secrets
+        id: check
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          if [ -n "$SERVER_HOST" ]; then
+            echo "has-server=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-server=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: [build-and-push, check-secrets]
+    runs-on: ubuntu-latest
+    if: needs.check-secrets.outputs.has-server == 'true'
 
     steps:
       - name: Deploy via SSH
