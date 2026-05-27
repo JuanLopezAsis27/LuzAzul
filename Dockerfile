@@ -25,6 +25,10 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
+# prisma CLI for `migrate deploy` at deploy time; resolves `prisma/config`
+# from /app/node_modules (the slim standalone bundle omits devDependencies).
+RUN npm install --no-save prisma@7.8.0
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
