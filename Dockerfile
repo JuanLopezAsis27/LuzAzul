@@ -24,13 +24,16 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Isolated Prisma CLI toolchain for `migrate deploy` at deploy time. Installed
-# under its own prefix (a clean npm tree) so it does not clash with the
-# pnpm-structured node_modules in the Next standalone bundle. When migrate runs
-# with `-w /opt/prisma-cli`, `prisma/config` resolves from this directory.
-RUN npm install --prefix /opt/prisma-cli prisma@7.8.0
+# Isolated Prisma toolchain for `migrate deploy` and the admin seed at deploy
+# time. Installed under its own prefix (a clean npm tree) so it does not clash
+# with the pnpm-structured node_modules in the Next standalone bundle, whose
+# server deps Turbopack bundles into chunks and leaves unrequireable. Migrate
+# and seed run with `-w /opt/prisma-cli`, resolving modules from this directory.
+RUN npm install --prefix /opt/prisma-cli \
+    prisma@7.8.0 @prisma/client@7.8.0 @prisma/adapter-pg@7.8.0 bcryptjs@2.4.3
 COPY --from=builder /app/prisma /opt/prisma-cli/prisma
 COPY --from=builder /app/prisma.config.ts /opt/prisma-cli/prisma.config.ts
+RUN cd /opt/prisma-cli && npx prisma generate
 
 USER nextjs
 EXPOSE 3000
