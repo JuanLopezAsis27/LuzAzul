@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/features/auth";
 import type { ReportData } from "../types";
+import { useMemo } from "react";
 
 interface Branch { id: string; name: string; }
 
@@ -13,11 +14,12 @@ export interface ReportFilters {
 
 export function useReportHistory(filters: ReportFilters, page: number) {
   const authFetch = useAuthFetch();
+  const PAGE_SIZE = 10;
 
   const { data, isLoading } = useQuery<ReportData>({
     queryKey: ["reports-history", filters.startDate, filters.endDate, filters.branchId, filters.section, page],
     queryFn: async () => {
-      const params = new URLSearchParams({ page: page.toString(), pageSize: "10" });
+      const params = new URLSearchParams();
       if (filters.startDate) params.set("startDate", filters.startDate);
       if (filters.endDate) params.set("endDate", filters.endDate);
       if (filters.branchId) params.set("branchId", filters.branchId);
@@ -28,10 +30,29 @@ export function useReportHistory(filters: ReportFilters, page: number) {
     },
   });
 
-  return {
-    dailyLoads: data?.data ?? [],
-    pagination: data?.pagination ?? { total: 0, page: 1, totalPages: 1 },
-    isLoading,
+    const allItems = useMemo(() =>
+    (data?.data ?? []).flatMap((dl) =>
+      (dl.items ?? []).map((item) => ({
+        ...item,
+        date: dl.date,
+        userName: dl.user?.name,
+        branchName: dl.branch?.name,
+      }))
+    ), [data]);
+
+    const totalItems = allItems.length;
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+    const paginatedItems = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    return {
+      dailyLoads: paginatedItems,
+      pagination: {
+        total: totalItems,
+        page,
+        totalPages,
+        pageSize: PAGE_SIZE,
+      },
+      isLoading,
   };
 }
 

@@ -41,7 +41,7 @@ export default function DashboardPage() {
         <p className="text-muted-foreground mt-1 text-sm">
           {user?.branch ? `${user.branch.name} — ` : ""}
           Resumen del día{" "}
-          {getArgentinaDate().toLocaleDateString("es-AR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
 

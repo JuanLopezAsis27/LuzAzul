@@ -83,9 +83,6 @@ importers:
       next:
         specifier: ^16.2.6
         version: 16.2.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      node-cron:
-        specifier: ^3.0.3
-        version: 3.0.3
       pg:
         specifier: ^8.20.0
         version: 8.20.0
@@ -126,9 +123,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
-      '@types/node-cron':
-        specifier: ^3.0.11
-        version: 3.0.11
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -1082,9 +1076,6 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node-cron@3.0.11':
-    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
-
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
@@ -1739,10 +1730,6 @@ packages:
       sass:
         optional: true
 
-  node-cron@3.0.3:
-    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
-    engines: {node: '>=6.0.0'}
-
   node-releases@2.0.37:
     resolution: {integrity: sha512-1h5gKZCF+pO/o3Iqt5Jp7wc9rH3eJJ0+nh/CIoiRwjRxde/hAHyLPXYN4V3CqKAbiZPSeJFSWHmJsbkicta0Eg==}
 
@@ -2233,10 +2220,6 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    hasBin: true
 
   valibot@1.2.0:
     resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
@@ -3150,8 +3133,6 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node-cron@3.0.11': {}
-
   '@types/node@22.19.17':
     dependencies:
       undici-types: 6.21.0
@@ -3775,10 +3756,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  node-cron@3.0.3:
-    dependencies:
-      uuid: 8.3.2
-
   node-releases@2.0.37: {}
 
   normalize-path@3.0.0: {}
@@ -4244,8 +4221,6 @@ snapshots:
       react: 19.2.6
 
   util-deprecate@1.0.2: {}
-
-  uuid@8.3.2: {}
 
   valibot@1.2.0(typescript@5.9.3):
     optionalDependencies:

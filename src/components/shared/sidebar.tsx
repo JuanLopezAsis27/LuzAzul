@@ -56,6 +56,7 @@ const mobileNavItems: NavItem[] = [
   { label: "Cargas", href: "/dashboard/cargas", icon: ClipboardList, roles: ["SUPER_ADMIN", "ADMIN", "EMPLOYEE"] },
   { label: "Historial", href: "/dashboard/historial", icon: History, roles: ["EMPLOYEE"] },
   { label: "Reportes", href: "/dashboard/reportes", icon: BarChart3, roles: ["SUPER_ADMIN", "ADMIN"] },
+  { label: "Usuarios", href: "/dashboard/usuarios", icon: Users, roles: [ "ADMIN"] },
   { label: "Perfil", href: "/dashboard/perfil", icon: UserCircle, roles: ["SUPER_ADMIN", "ADMIN", "EMPLOYEE"] },
 ];
 

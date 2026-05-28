@@ -12,6 +12,7 @@ import type { ProductItem, ProductFormData } from "../types";
 import { useProducts, useProductMutations } from "../hooks/use-products";
 
 const emptyForm: ProductFormData = { code: "", name: "", description: "", label: "", barcode: "" };
+const NULLABLE_FIELDS = ["description", "label", "barcode"] as const;
 
 export function ProductsPage() {
   const [search, setSearch] = useState("");
@@ -31,12 +32,20 @@ export function ProductsPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const sanitizedData = { ...formData };
+    for (const field of NULLABLE_FIELDS) {
+      if (sanitizedData[field] === "") {
+        (sanitizedData as Record<string, unknown>)[field] = null;
+      }
+    }
+
     if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct.id, data: formData }, {
+      updateMutation.mutate({ id: editingProduct.id, data: sanitizedData }, {
         onSuccess: () => { setIsDialogOpen(false); setEditingProduct(null); },
       });
     } else {
-      createMutation.mutate(formData, {
+      createMutation.mutate(sanitizedData, {
         onSuccess: () => { setIsDialogOpen(false); setFormData(emptyForm); },
       });
     }

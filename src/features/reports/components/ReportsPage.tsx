@@ -103,14 +103,7 @@ export function ReportsPage() {
   const { allData, isLoadingCharts } = useReportAllData({ startDate, endDate, branchId });
   const { dailyLoads, pagination, isLoading } = useReportHistory({ startDate, endDate, branchId, section }, page);
 
-  const allItems: ItemWithContext[] = dailyLoads.flatMap((dl: ReportDailyLoad) =>
-    (dl.items || []).map((item) => ({
-      ...item,
-      date: dl.date,
-      userName: dl.user?.name,
-      branchName: dl.branch?.name,
-    }))
-  );
+ const allItems = dailyLoads;
 
   const totalItemCount = useMemo(() =>
     (allData?.data ?? []).reduce((sum: number, dl: ReportDailyLoad) => sum + (dl.items?.length ?? 0), 0),
@@ -360,7 +353,7 @@ export function ReportsPage() {
                         <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} unit={` ${unit}`} />
                         <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(v) => [`${Number(v ?? 0).toLocaleString("es-AR")} ${unit}`, "Total"]} />
-                        <Bar dataKey="total" name="Total" radius={[4, 4, 0, 0]}>
+                        <Bar dataKey="total" name="Total" radius={[4, 4, 0, 0]} fill="#db8000">
                           {data.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                         </Bar>
                       </BarChart>
@@ -413,8 +406,8 @@ export function ReportsPage() {
                           return (
                             <div key={key}>
                               <p className="text-xs font-medium mb-2" style={{ color: fill }}>{label} — Top {data.length}</p>
-                              <ResponsiveContainer width="100%" height={Math.max(160, data.length * 30)}>
-                                <BarChart data={data} layout="vertical" margin={{ left: 8, right: 24, top: 0, bottom: 0 }}>
+                              <ResponsiveContainer width="100%" height={Math.max(180, data.length * 40)}>
+                                <BarChart data={data} layout="vertical" margin={{ left: 18, right: 24, top: 0, bottom: 0 }}>
                                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
                                   <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
                                   <YAxis type="category" dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} width={130} />

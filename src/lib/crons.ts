@@ -1,4 +1,3 @@
-import cron from "node-cron";
 import { prisma } from "./db";
 import { getArgentinaDateStr, getArgentinaDateUTC } from "./utils";
 
@@ -9,23 +8,56 @@ async function closeLoads() {
       where: { isClosed: false, date: { lt: today } },
       data: { isClosed: true },
     });
-    console.log(
-      `[CRON] Closed ${result.count} loads on ${getArgentinaDateStr()}`
-    );
+    if (result.count > 0) {
+      console.log(
+        `[CRON] Closed ${result.count} loads on ${getArgentinaDateStr()}`
+      );
+    }
   } catch (error) {
     console.error("[CRON] Error closing loads:", error);
   }
 }
 
-export function initializeCrons() {
-  if (typeof window !== "undefined") return;
+function getNextCheckTime(): number {
+  const now = new Date();
+  const argNow = new Date(now.getTime() - 3 * 60 * 60 * 1000);
 
-  console.log("[CRON] Initializing cron jobs");
+  // Next check at 00:05 Argentina time (03:05 UTC)
+  const nextCheck = new Date(argNow);
+  nextCheck.setUTCHours(3, 5, 0, 0);
 
-  // Run daily at 00:00 Argentina time (03:00 UTC)
-  cron.schedule("0 3 * * *", closeLoads, {
-    timezone: "UTC",
-  });
+  if (nextCheck <= now) {
+    nextCheck.setUTCDate(nextCheck.getUTCDate() + 1);
+  }
 
-  console.log("[CRON] Cron jobs initialized");
+  return nextCheck.getTime() - now.getTime();
 }
+
+let initialized = false;
+
+export function initializeCrons() {
+  if (typeof window !== "undefined" || initialized) return;
+  initialized = true;
+
+  console.log("[CRON] Initializing cron service");
+
+  // Run close loads check immediately on startup
+  closeLoads();
+
+  // Schedule next check
+  function scheduleNextCheck() {
+    const delayMs = getNextCheckTime();
+    console.log(
+      `[CRON] Next check scheduled in ${Math.round(delayMs / 1000 / 60)} minutes`
+    );
+
+    setTimeout(() => {
+      closeLoads();
+      scheduleNextCheck();
+    }, delayMs);
+  }
+
+  scheduleNextCheck();
+  console.log("[CRON] Cron service initialized");
+}
+

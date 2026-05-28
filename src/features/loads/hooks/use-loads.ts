@@ -69,7 +69,11 @@ export function useLoadMutations() {
   const authFetch = useAuthFetch();
   const queryClient = useQueryClient();
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["daily-load-today"] });
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["daily-load-today"] });
+    queryClient.invalidateQueries({ queryKey: ["web-history"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  };
 
   const submitMutation = useMutation({
     mutationFn: async (items: SubmitItem[]) => {
