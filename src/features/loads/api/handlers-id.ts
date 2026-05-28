@@ -59,6 +59,12 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     await prisma.loadItem.delete({ where: { id: itemId } });
+
+    const itemCount = await prisma.loadItem.count({ where: { dailyLoadId: id } });
+    if (itemCount === 0) {
+      await prisma.dailyLoad.delete({ where: { id } });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Delete load item error:", error);

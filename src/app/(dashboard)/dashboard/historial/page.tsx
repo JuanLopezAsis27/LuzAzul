@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth, useAuthFetch } from "@/features/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, Calendar, Loader2, AlertTriangle, Gift, Coffee, Lock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getArgentinaDate, getArgentinaDateStr } from "@/lib/utils";
 
 interface LoadItem {
   id: string;
@@ -40,7 +40,7 @@ export default function HistorialPage() {
   const authFetch = useAuthFetch();
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
+    const d = getArgentinaDate();
     d.setDate(d.getDate() - i);
     return d.toISOString().split("T")[0];
   });
@@ -76,7 +76,7 @@ export default function HistorialPage() {
       {/* Selector de fecha */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {last7Days.map((date) => {
-          const d = new Date(date + "T12:00:00");
+          const d = new Date(date + "T12:00:00Z");
           const isActive = date === selectedDate;
           const isToday = date === last7Days[0];
 

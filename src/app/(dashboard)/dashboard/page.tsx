@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, Package, ClipboardList, TrendingUp, AlertTriangle, Gift, Coffee, Loader2 } from "lucide-react";
 import { useDashboardStats } from "@/features/dashboard/hooks/use-dashboard-stats";
+import { getArgentinaDate } from "@/lib/utils";
 
 const UNIT_ABBR: Record<string, string> = { GRAMOS: "g", KILOGRAMOS: "kg", LITROS: "L", UNIDAD: "u" };
 
@@ -40,7 +41,7 @@ export default function DashboardPage() {
         <p className="text-muted-foreground mt-1 text-sm">
           {user?.branch ? `${user.branch.name} — ` : ""}
           Resumen del día{" "}
-          {new Date().toLocaleDateString("es-AR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {getArgentinaDate().toLocaleDateString("es-AR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
       </div>
 

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Loader2, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Gift, Coffee, X, Building2, User, Download, Maximize2, ChevronDown, ChevronUp, LockOpen } from "lucide-react";
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import * as XLSX from "xlsx";
+import { getArgentinaDate, getArgentinaDateStr } from "@/lib/utils";
 
 interface LoadItem { id: string; section: string; quantity: number; unit: string; product: { id: string; name: string; code: string }; state: { id: string; name: string } | null; }
 interface DailyLoadEntry { id: string; date: string; isClosed: boolean; items: LoadItem[]; user: { id: string; name: string }; branch: { id: string; name: string }; }
@@ -23,13 +24,6 @@ const UNIT_ABBR: Record<string, string> = { GRAMOS: "g", KILOGRAMOS: "kg", LITRO
 const UNIT_CHART_LABEL: Record<string, string> = { g: "Gramos (g)", L: "Litros (L)", u: "Unidades (u)" };
 const WEEKDAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-// Argentina is UTC-3 (no DST)
-function getArgentinaDateStr(date?: Date): string {
-  const d = date ?? new Date();
-  const argTime = new Date(d.getTime() - 3 * 60 * 60 * 1000);
-  return argTime.toISOString().split("T")[0];
-}
 
 function getBaseUnit(unit: string): string {
   if (unit === "GRAMOS" || unit === "KILOGRAMOS") return "g";
@@ -48,7 +42,7 @@ function downloadDayExcel(date: string, loads: DailyLoadEntry[]) {
   for (const load of loads) {
     for (const item of load.items) {
       rows.push([
-        new Date(date + "T12:00:00").toLocaleDateString("es-AR"),
+        new Date(date + "T12:00:00Z").toLocaleDateString("es-AR"),
         load.branch.name,
         load.user.name,
         sectionConfig[item.section]?.label ?? item.section,
@@ -157,7 +151,7 @@ function DayStats({ loads }: { loads: DailyLoadEntry[] }) {
                 <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#94a3b8", fontSize: 10 }} axisLine={false} tickLine={false} unit={` ${unit}`} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${Number(v ?? 0).toLocaleString("es-AR")} ${unit}`, "Total"]} />
-                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="total" radius={[4, 4, 0, 0]} fill="#db8000">
                   {chartData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Bar>
               </BarChart>
@@ -217,14 +211,14 @@ function LoadsByBranch({ loads, onReopen, todayStr }: { loads: DailyLoadEntry[];
   }, [paginated]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 ">
       {byBranch.map((branch) => (
         <div key={branch.branchName}>
           <div className="flex items-center gap-2 mb-2">
             <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-sm font-semibold">{branch.branchName}</span>
           </div>
-          <div className="space-y-2 pl-5">
+          <div className="space-y-2">
             {branch.loads.map((load) => (
               <div key={load.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3 space-y-2">
                 <div className="flex items-center gap-2 text-xs">
@@ -263,7 +257,7 @@ function LoadsByBranch({ loads, onReopen, todayStr }: { loads: DailyLoadEntry[];
                     <div className="pt-1">
                       {load.items.map((item) => (
                         <div key={item.id} className="text-xs text-muted-foreground flex justify-between py-0.5 border-b border-white/5 last:border-0">
-                          <span className="truncate">{item.product.code} — {item.product.name}</span>
+                          <span className="truncate max-w-[250px] sm:max-w-full">{item.product.code} — {item.product.name}</span>
                           <span className="ml-2 shrink-0">{item.quantity} {UNIT_ABBR[item.unit] ?? item.unit}</span>
                         </div>
                       ))}
@@ -304,8 +298,7 @@ export function AdminLoadsCalendar() {
   const authFetch = useAuthFetch();
   const queryClient = useQueryClient();
 
-  // Use Argentina time for initial month/year and today
-  const argNow = new Date(new Date().getTime() - 3 * 60 * 60 * 1000);
+  const argNow = getArgentinaDate();
   const [year, setYear] = useState(argNow.getUTCFullYear());
   const [month, setMonth] = useState(argNow.getUTCMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -382,7 +375,7 @@ export function AdminLoadsCalendar() {
   const todayStr = getArgentinaDateStr();
 
   const selectedDateLabel = selectedDate
-    ? new Date(selectedDate + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })
+    ? new Date(selectedDate + "T12:00:00Z").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })
     : "";
 
   return (
@@ -400,7 +393,7 @@ export function AdminLoadsCalendar() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card className="border-white/5 bg-white/[0.02]">
-            <CardHeader>
+            <CardHeader className="px-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{MONTHS[month]} {year}</CardTitle>
                 <div className="flex gap-1">
@@ -409,7 +402,7 @@ export function AdminLoadsCalendar() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-5">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
               ) : (
@@ -427,7 +420,7 @@ export function AdminLoadsCalendar() {
                         key={i}
                         onClick={() => cell.isCurrentMonth && setSelectedDate(isSelected ? null : cell.dateStr)}
                         disabled={!cell.isCurrentMonth}
-                        className={`relative min-h-[60px] rounded-lg p-1.5 text-left transition-all ${
+                        className={`relative min-h-[85px] rounded-lg p-1.5 text-left lg:left-5 transition-all ${
                           !cell.isCurrentMonth ? "opacity-20 cursor-default" :
                           isSelected ? "bg-primary/20 ring-1 ring-primary" :
                           isToday ? "bg-white/10 ring-1 ring-white/20" :
@@ -439,10 +432,10 @@ export function AdminLoadsCalendar() {
                         {loads.length > 0 && (
                           <div className="mt-1 space-y-0.5">
                             <div className="flex items-center gap-1">
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                              <span className="text-[10px] text-muted-foreground">{loads.length} carga{loads.length !== 1 ? "s" : ""}</span>
+                              <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-primary" />
+                              <span className="text-[11px] text-muted-foreground">{loads.length} carga{loads.length !== 1 ? "s" : ""}</span>
                             </div>
-                            {totalItems > 0 && <span className="text-[10px] text-muted-foreground">{totalItems} items</span>}
+                            {totalItems > 0 && <span className="hidden sm:block text-[10px] text-muted-foreground">{totalItems} items</span>}
                           </div>
                         )}
                       </button>

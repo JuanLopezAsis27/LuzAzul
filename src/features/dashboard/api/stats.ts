@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth-middleware";
+import { getArgentinaDateStr, getArgentinaDateUTC } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const user = getAuthUser(request);
   if (user instanceof NextResponse) return user;
 
-  const today = new Date(new Date().toISOString().split("T")[0] + "T00:00:00.000Z");
+  const today = getArgentinaDateUTC(getArgentinaDateStr());
 
   const loadWhere =
     user.role === "EMPLOYEE"

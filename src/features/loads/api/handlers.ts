@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authorize } from "@/lib/auth-middleware";
 import { createDailyLoadSchema } from "@/lib/validations";
+import { getArgentinaDateStr, getArgentinaDateUTC } from "@/lib/utils";
 
 const loadInclude = {
   items: {
@@ -15,22 +16,13 @@ const loadInclude = {
   branch: { select: { id: true, name: true } },
 };
 
-// Argentina is UTC-3 (no DST). Returns "YYYY-MM-DD" in Argentina local time.
-function getArgentinaDateStr(date?: Date): string {
-  const d = date ?? new Date();
-  const argTime = new Date(d.getTime() - 3 * 60 * 60 * 1000);
-  return argTime.toISOString().split("T")[0];
-}
-
 export async function GET(request: NextRequest) {
   const auth = authorize(request, ["SUPER_ADMIN", "ADMIN", "EMPLOYEE"]);
   if ("error" in auth) return auth.error;
 
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
-  const today = dateParam
-    ? new Date(dateParam + "T00:00:00.000Z")
-    : new Date(getArgentinaDateStr() + "T00:00:00.000Z");
+  const today = getArgentinaDateUTC(dateParam || getArgentinaDateStr());
 
   if (auth.user.role === "EMPLOYEE") {
     const dailyLoad = await prisma.dailyLoad.findUnique({
@@ -58,7 +50,7 @@ export async function POST(request: NextRequest) {
     const result = createDailyLoadSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Datos inválidos", details: result.error.flatten() }, { status: 400 });
 
-    const today = new Date(getArgentinaDateStr() + "T00:00:00.000Z");
+    const today = getArgentinaDateUTC(getArgentinaDateStr());
 
     const existing = await prisma.dailyLoad.findUnique({ where: { userId_date: { userId: auth.user.userId, date: today } } });
 
