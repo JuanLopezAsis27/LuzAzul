@@ -35,23 +35,83 @@ function normalize(qty: number, unit: string): number {
   return unit === "KILOGRAMOS" ? qty * 1000 : qty;
 }
 
+interface TotalizedItem {
+  productId: string;
+  productCode: string;
+  productName: string;
+  totalInBaseUnit: number;
+  baseUnit: string;
+  stateLabel: string;
+}
+
+function totalizeItems(items: LoadItem[]): TotalizedItem[] {
+  const map = new Map<string, TotalizedItem & { stateSet: Set<string> }>();
+  for (const item of items) {
+    const baseUnit = getBaseUnit(item.unit);
+    const key = `${item.product.id}__${baseUnit}`;
+    if (!map.has(key)) {
+      map.set(key, { productId: item.product.id, productCode: item.product.code, productName: item.product.name, totalInBaseUnit: 0, baseUnit, stateLabel: "", stateSet: new Set() });
+    }
+    const entry = map.get(key)!;
+    entry.totalInBaseUnit += normalize(item.quantity, item.unit);
+    if (item.state?.name) entry.stateSet.add(item.state.name);
+  }
+  return [...map.values()].map(({ stateSet, ...rest }) => ({
+    ...rest,
+    stateLabel: stateSet.size === 0 ? "—" : stateSet.size === 1 ? [...stateSet][0] : "Varios",
+  }));
+}
+
+interface StateEntry { stateName: string | null; amount: number }
+interface ProductGroup { productId: string; productCode: string; productName: string; baseUnit: string; entries: StateEntry[]; total: number }
+
+function groupItems(items: LoadItem[]): ProductGroup[] {
+  const map = new Map<string, ProductGroup>();
+  for (const item of items) {
+    const baseUnit = getBaseUnit(item.unit);
+    const key = `${item.product.id}__${baseUnit}`;
+    if (!map.has(key)) {
+      map.set(key, { productId: item.product.id, productCode: item.product.code, productName: item.product.name, baseUnit, entries: [], total: 0 });
+    }
+    const group = map.get(key)!;
+    const amount = normalize(item.quantity, item.unit);
+    group.total += amount;
+    const stateName = item.state?.name ?? null;
+    const existing = group.entries.find(e => e.stateName === stateName);
+    if (existing) existing.amount += amount;
+    else group.entries.push({ stateName, amount });
+  }
+  return [...map.values()];
+}
+
 function downloadDayExcel(date: string, loads: DailyLoadEntry[]) {
-  const rows: unknown[][] = [
-    ["Fecha", "Sucursal", "Empleado", "Sección", "Código", "Producto", "Cantidad", "Unidad", "Estado"],
-  ];
+  type GroupKey = string;
+  const groups = new Map<GroupKey, { branchName: string; userName: string; section: string; productCode: string; productName: string; baseUnit: string; entries: StateEntry[]; total: number }>();
   for (const load of loads) {
     for (const item of load.items) {
-      rows.push([
-        new Date(date + "T12:00:00Z").toLocaleDateString("es-AR"),
-        load.branch.name,
-        load.user.name,
-        sectionConfig[item.section]?.label ?? item.section,
-        item.product.code,
-        item.product.name,
-        item.quantity,
-        UNIT_ABBR[item.unit] ?? item.unit,
-        item.state?.name ?? "—",
-      ]);
+      const baseUnit = getBaseUnit(item.unit);
+      const key = `${load.branch.id}|${load.user.id}|${item.section}|${item.product.id}|${baseUnit}`;
+      if (!groups.has(key)) {
+        groups.set(key, { branchName: load.branch.name, userName: load.user.name, section: item.section, productCode: item.product.code, productName: item.product.name, baseUnit, entries: [], total: 0 });
+      }
+      const group = groups.get(key)!;
+      const amount = normalize(item.quantity, item.unit);
+      group.total += amount;
+      const stateName = item.state?.name ?? null;
+      const existing = group.entries.find(e => e.stateName === stateName);
+      if (existing) existing.amount += amount;
+      else group.entries.push({ stateName, amount });
+    }
+  }
+  const dateStr = new Date(date + "T12:00:00Z").toLocaleDateString("es-AR");
+  const rows: unknown[][] = [["Fecha", "Sucursal", "Empleado", "Sección", "Código", "Producto", "Cantidad", "Unidad", "Estado"]];
+  for (const g of groups.values()) {
+    const sectionLabel = sectionConfig[g.section]?.label ?? g.section;
+    for (const entry of g.entries) {
+      rows.push([dateStr, g.branchName, g.userName, sectionLabel, g.productCode, g.productName, entry.amount, g.baseUnit, entry.stateName ?? "—"]);
+    }
+    if (g.entries.length > 1) {
+      rows.push([dateStr, g.branchName, g.userName, sectionLabel, g.productCode, g.productName, g.total, g.baseUnit, "TOTAL"]);
     }
   }
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -125,12 +185,13 @@ function DayStats({ loads }: { loads: DailyLoadEntry[] }) {
         {sectionKeys.map((sec) => {
           const cfg = sectionConfig[sec];
           const Icon = cfg.icon;
-          const count = loads.reduce((sum, l) => sum + l.items.filter((i) => i.section === sec).length, 0);
+          const sectionItems = loads.flatMap((l) => l.items.filter((i) => i.section === sec));
+          const uniqueCount = totalizeItems(sectionItems).length;
           return (
             <div key={sec} className={`rounded-lg p-3 ${cfg.bg} flex flex-col gap-1`}>
               <Icon className={`w-4 h-4 ${cfg.color}`} />
               <p className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</p>
-              <p className="text-sm font-bold">{count} items</p>
+              <p className="text-sm font-bold">{uniqueCount} producto{uniqueCount !== 1 ? "s" : ""}</p>
             </div>
           );
         })}
@@ -240,28 +301,41 @@ function LoadsByBranch({ loads, onReopen, todayStr }: { loads: DailyLoadEntry[];
                   </div>
                 </div>
                 {load.items.length > 0 ? (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {(["MERMA", "DONACION", "REFRIGERIO"] as const).map((section) => {
-                      const items = load.items.filter((i) => i.section === section);
-                      if (items.length === 0) return null;
+                      const sectionItems = load.items.filter((i) => i.section === section);
+                      if (sectionItems.length === 0) return null;
                       const cfg = sectionConfig[section];
                       const Icon = cfg.icon;
+                      const groups = groupItems(sectionItems);
                       return (
-                        <div key={section} className={`flex items-center gap-2 text-xs ${cfg.bg} rounded px-2 py-1`}>
-                          <Icon className={`w-3 h-3 ${cfg.color}`} />
-                          <span className={cfg.color}>{cfg.label}</span>
-                          <span className="ml-auto text-muted-foreground">{items.length} items</span>
+                        <div key={section}>
+                          <div className={`flex items-center gap-2 text-xs ${cfg.bg} rounded px-2 py-1 mb-1`}>
+                            <Icon className={`w-3 h-3 ${cfg.color}`} />
+                            <span className={cfg.color}>{cfg.label}</span>
+                            <span className="ml-auto text-muted-foreground">{groups.length} producto{groups.length !== 1 ? "s" : ""}</span>
+                          </div>
+                          {groups.map((group, gIdx) => (
+                            <div key={gIdx}>
+                              {group.entries.map((entry, eIdx) => (
+                                <div key={eIdx} className="text-xs text-muted-foreground flex justify-between py-0.5 border-b border-white/5 pl-3">
+                                  <span className="truncate max-w-[200px] sm:max-w-full">
+                                    {group.productCode} — {group.productName}{entry.stateName ? ` (${entry.stateName})` : ""}
+                                  </span>
+                                  <span className="ml-2 shrink-0 tabular-nums">{entry.amount.toLocaleString("es-AR")} {group.baseUnit}</span>
+                                </div>
+                              ))}
+                              {group.entries.length > 1 && (
+                                <div className="text-xs flex justify-between py-0.5 border-b border-white/5 pl-3 font-medium text-white/60">
+                                  <span className="truncate max-w-[200px] sm:max-w-full">{group.productCode} — {group.productName} — Total</span>
+                                  <span className="ml-2 shrink-0 tabular-nums">{group.total.toLocaleString("es-AR")} {group.baseUnit}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       );
                     })}
-                    <div className="pt-1">
-                      {load.items.map((item) => (
-                        <div key={item.id} className="text-xs text-muted-foreground flex justify-between py-0.5 border-b border-white/5 last:border-0">
-                          <span className="truncate max-w-[250px] sm:max-w-full">{item.product.code} — {item.product.name}</span>
-                          <span className="ml-2 shrink-0">{item.quantity} {UNIT_ABBR[item.unit] ?? item.unit}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground">Sin items</p>

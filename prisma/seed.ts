@@ -1,73 +1,15 @@
-/// <reference types="node" />
-import "dotenv/config";
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hash } from "bcryptjs";
 
-const connectionString = process.env.DATABASE_URL!;
-const adapter = new PrismaPg({ connectionString });
+const { Pool } = require("pg");
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Crear Super Admin (Rubén)
-  const superAdminPassword = await hash("LuzAzul2026!", 12);
-  const superAdmin = await prisma.user.upsert({
-    where: { email: "ruben@luzazul.com" },
-    update: {},
-    create: {
-      email: "ruben@luzazul.com",
-      name: "Rubén",
-      password: superAdminPassword,
-      role: Role.SUPER_ADMIN,
-      isActive: true,
-    },
-  });
-  console.log(`✅ Super Admin creado: ${superAdmin.name} (${superAdmin.email})`);
-
-  // Crear estados de producto por defecto
-  // const defaultStates = [
-  //   "Vencido",
-  //   "Roto",
-  //   "Dañado",
-  //   "Apto para donación",
-  //   "Contaminado",
-  //   "Defectuoso",
-  // ];
-
-  // for (const stateName of defaultStates) {
-  //   await prisma.productState.upsert({
-  //     where: { name_section: { name: stateName, section: null } },
-  //     update: {},
-  //     create: { name: stateName, isActive: true },
-  //   });
-  // }
-  // console.log(`✅ ${defaultStates.length} estados de producto creados`);
-
-  // Crear sucursales de ejemplo
-  const branches = [
-    { name: "Sucursal Central", address: "Av. Principal 123" },
-    { name: "Sucursal Norte", address: "Calle Norte 456" },
-  ];
-
-  for (const branchData of branches) {
-    await prisma.branch.upsert({
-      where: { name: branchData.name },
-      update: {},
-      create: { ...branchData, isActive: true },
-    });
-  }
-  console.log(`✅ ${branches.length} sucursales creadas`);
-
-  // Crear productos de ejemplo (lácteos Luz Azul)
   const products = [
-  {
-    "code": "100",
-    "name": "(001) Salamin Fino Cagnoli x Kg",
-    "description": "(001) Salamin Fino Cagnoli x Kg",
-    "label": "Fiambres Cagnoli"
-  },
   {
     "code": "101",
     "name": "(002) Salamin Grueso Cagnoli x Kg",
@@ -109,7 +51,7 @@ async function main() {
     "name": "(012) Ac. Verdes en Rodajas Molanes x 1.7 Kg",
     "description": "(012) Ac. Verdes en Rodajas Molanes x 1.7 Kg",
     "label": "Molanes",
-    "barcode": "BL"
+    "barcode": "7797283006012"
   },
   {
     "code": "362",
@@ -134,7 +76,7 @@ async function main() {
     "name": "(014) Pack Obsequio Molanes",
     "description": "(014) Pack Obsequio Molanes",
     "label": "Molanes",
-    "barcode": "BJ"
+    "barcode": "7797283060014"
   },
   {
     "code": "354",
@@ -147,7 +89,8 @@ async function main() {
     "code": "7798142720018",
     "name": "(018) Mascarpone Festa x 250 gr",
     "description": "(018) Mascarpone Festa x 250 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798142720018"
   },
   {
     "code": "365",
@@ -220,7 +163,8 @@ async function main() {
     "code": "7797283007033",
     "name": "(033)Aceite de Oliva Extra Virgen Molanes x 500 ml",
     "description": "(033)Aceite de Oliva Extra Virgen Molanes x 500 ml",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283007033"
   },
   {
     "code": "112",
@@ -232,7 +176,8 @@ async function main() {
     "code": "7798134610037",
     "name": "(037) Queso Camembert x 100 gr",
     "description": "(037) Queso Camembert x 100 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610037"
   },
   {
     "code": "113",
@@ -245,7 +190,7 @@ async function main() {
     "name": "(042) Berenjenas en Aceite x 220 grs Molanes",
     "description": "(042) Berenjenas en Aceite x 220 grs Molanes",
     "label": "Molanes",
-    "barcode": "BQ"
+    "barcode": "7797283003042"
   },
   {
     "code": "221",
@@ -257,7 +202,8 @@ async function main() {
     "code": "7798134610051",
     "name": "(051) Neufchatel 100 g Corazoncitos",
     "description": "(051) Neufchatel 100 g Corazoncitos",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610051"
   },
   {
     "code": "142",
@@ -275,7 +221,8 @@ async function main() {
     "code": "7798142720056",
     "name": "(056) Queso Crema Festa Descremado x 3Kg.",
     "description": "(056) Queso Crema Festa Descremado x 3Kg.",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798142720056"
   },
   {
     "code": "147",
@@ -299,7 +246,8 @@ async function main() {
     "code": "7798142720063",
     "name": "(063) Queso Crema Festa x 3 Kg",
     "description": "(063) Queso Crema Festa x 3 Kg",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798142720063"
   },
   {
     "code": "199",
@@ -311,7 +259,8 @@ async function main() {
     "code": "7798142720070",
     "name": "(070) Mascarpone Festa x 3 Kg",
     "description": "(070) Mascarpone Festa x 3 Kg",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798142720070"
   },
   {
     "code": "244",
@@ -335,13 +284,15 @@ async function main() {
     "code": "7798411850040",
     "name": "(0718) Sal Marina F H y Limon Art. Gourmet x 120gr",
     "description": "(0718) Sal Marina F H y Limon Art. Gourmet x 120gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850040"
   },
   {
     "code": "7798411850033",
     "name": "(0719) Sal Marina Pim y ajo ahu Gourmet x 120 gr",
     "description": "(0719) Sal Marina Pim y ajo ahu Gourmet x 120 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850033"
   },
   {
     "code": "120",
@@ -353,37 +304,43 @@ async function main() {
     "code": "7798411850064",
     "name": "(0720) Sal Marina Pastas yArroces  Gourmet x 120gr",
     "description": "(0720) Sal Marina Pastas yArroces  Gourmet x 120gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850064"
   },
   {
     "code": "7798411850309",
     "name": "(0730) Merken ahumado Art. Gourmet x 55gr",
     "description": "(0730) Merken ahumado Art. Gourmet x 55gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850309"
   },
   {
     "code": "7798411850293",
     "name": "(0731) Curry ahumado Art. Gourmet x 60gr",
     "description": "(0731) Curry ahumado Art. Gourmet x 60gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850293"
   },
   {
     "code": "7798411850286",
     "name": "(0732) Ajillo Ahumado Art. Gourmet x 60gr",
     "description": "(0732) Ajillo Ahumado Art. Gourmet x 60gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850286"
   },
   {
     "code": "7798411850262",
     "name": "(0733) Cebolla escama Ahum. Art. Gourmet x 50gr",
     "description": "(0733) Cebolla escama Ahum. Art. Gourmet x 50gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850262"
   },
   {
     "code": "7798411850026",
     "name": "(0734) Pimenton ahumado Art. Gourmet x 50gr",
     "description": "(0734) Pimenton ahumado Art. Gourmet x 50gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850026"
   },
   {
     "code": "371",
@@ -414,49 +371,57 @@ async function main() {
     "code": "7798411851146",
     "name": "(0807) Sal Parrillera Gourmet x 65 gr",
     "description": "(0807) Sal Parrillera Gourmet x 65 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851146"
   },
   {
     "code": "7798411851184",
     "name": "(0808) Sal Patagonica x 65 gr",
     "description": "(0808) Sal Patagonica x 65 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851184"
   },
   {
     "code": "7798411851160",
     "name": "(0809) Sal pimienta, Limon y Ajo x 65 gr",
     "description": "(0809) Sal pimienta, Limon y Ajo x 65 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851160"
   },
   {
     "code": "7798411851153",
     "name": "(0810) Sal Con 5 Pimientas x 65 gr",
     "description": "(0810) Sal Con 5 Pimientas x 65 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851153"
   },
   {
     "code": "7798411851207",
     "name": "(0819) Condimento Para Pizzas x 25 gr",
     "description": "(0819) Condimento Para Pizzas x 25 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851207"
   },
   {
     "code": "7798134610082",
     "name": "(082) Queso Brie x 100gr",
     "description": "(082) Queso Brie x 100gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610082"
   },
   {
     "code": "7798259430084",
     "name": "(084) Jugo Pura Frutta Manzana Verde x 1 L",
     "description": "(084) Jugo Pura Frutta Manzana Verde x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259430084"
   },
   {
     "code": "7797283005084",
     "name": "(084) Tomate Triturado Molanes x 8 Kg",
     "description": "(084) Tomate Triturado Molanes x 8 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005084"
   },
   {
     "code": "121",
@@ -474,7 +439,8 @@ async function main() {
     "code": "7798259439087",
     "name": "(087) Jugo Pura Frutta Naranja x 1 L",
     "description": "(087) Jugo Pura Frutta Naranja x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439087"
   },
   {
     "code": "110",
@@ -492,19 +458,22 @@ async function main() {
     "code": "7798411850354",
     "name": "(0907) Oregano hoja Art. Gourmet x 15gr",
     "description": "(0907) Oregano hoja Art. Gourmet x 15gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850354"
   },
   {
     "code": "7798353194592",
     "name": "(091) Aceite de Oliva Calamaro x 250ml",
     "description": "(091) Aceite de Oliva Calamaro x 250ml",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798353194592"
   },
   {
     "code": "7798353194608",
     "name": "(091) Aceto Clasico Calamaro x 250ml",
     "description": "(091) Aceto Clasico Calamaro x 250ml",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798353194608"
   },
   {
     "code": "160",
@@ -516,7 +485,8 @@ async function main() {
     "code": "7797283005091",
     "name": "(091) Tomate Triturado Molanes x 1 Kg",
     "description": "(091) Tomate Triturado Molanes x 1 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005091"
   },
   {
     "code": "798411851092",
@@ -529,13 +499,15 @@ async function main() {
     "code": "7798411851214",
     "name": "(0932) Condimento Para Provoleta x 25 gr",
     "description": "(0932) Condimento Para Provoleta x 25 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411851214"
   },
   {
     "code": "7798259439094",
     "name": "(094) Jugo Pura Frutta Manzana/Frutilla x 1 L",
     "description": "(094) Jugo Pura Frutta Manzana/Frutilla x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439094"
   },
   {
     "code": "350",
@@ -547,7 +519,8 @@ async function main() {
     "code": "7798259439100",
     "name": "(100) Jugo Pura Frutta Manzana/Arandano x 1 L",
     "description": "(100) Jugo Pura Frutta Manzana/Arandano x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439100"
   },
   {
     "code": "128",
@@ -603,7 +576,8 @@ async function main() {
     "code": "7798158630103",
     "name": "(103) Boconccino  x 150 grs",
     "description": "(103) Boconccino  x 150 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630103"
   },
   {
     "code": "363",
@@ -644,13 +618,14 @@ async function main() {
     "name": "(108) Queso Untable Cheddar Tregar x 180 gr",
     "description": "(108) Queso Untable Cheddar Tregar x 180 gr",
     "label": "Tregar",
-    "barcode": "779391301358"
+    "barcode": "7793913013658"
   },
   {
     "code": "7791218000403",
     "name": "(108) Tapas Empanadas Tubo XL Criolla Orali x 2 Kg",
     "description": "(108) Tapas Empanadas Tubo XL Criolla Orali x 2 Kg",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218000403"
   },
   {
     "code": "7795165000110",
@@ -683,49 +658,57 @@ async function main() {
     "code": "7798411850330",
     "name": "(1123)Sal c / Pim N  limon ajo Art. Gourmet x 120g",
     "description": "(1123)Sal c / Pim N  limon ajo Art. Gourmet x 120g",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850330"
   },
   {
     "code": "7798411850255",
     "name": "(1124) Sal con 5 pimientas Art. Gourmet x 120gr",
     "description": "(1124) Sal con 5 pimientas Art. Gourmet x 120gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850255"
   },
   {
     "code": "7798411850217",
     "name": "(1127) Provenzal Art. Gourmet x 45gr",
     "description": "(1127) Provenzal Art. Gourmet x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850217"
   },
   {
     "code": "7798411850248",
     "name": "(1128) Mediterraneo (Ajo y Piment) Gourmet x 50 g",
     "description": "(1128) Mediterraneo (Ajo y Piment) Gourmet x 50 g",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850248"
   },
   {
     "code": "7798411850200",
     "name": "(1129) Condimento para Pizzas Art. Gourmet x 45gr",
     "description": "(1129) Condimento para Pizzas Art. Gourmet x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850200"
   },
   {
     "code": "7798411850194",
     "name": "(1130) Condi. para provoleta Art.Gourmet x 45g",
     "description": "(1130) Condi. para provoleta Art.Gourmet x 45g",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850194"
   },
   {
     "code": "7798411850019",
     "name": "(1131) Capresse Art. Gourmet x 45gr",
     "description": "(1131) Capresse Art. Gourmet x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850019"
   },
   {
     "code": "7798411850224",
     "name": "(1133) Hongos al puerro Art. Gourmet x 45gr",
     "description": "(1133) Hongos al puerro Art. Gourmet x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850224"
   },
   {
     "code": "7791218122921",
@@ -745,7 +728,7 @@ async function main() {
     "name": "(116) Aceitunas Verdes \"00\" Molanes x 2 Kg",
     "description": "(116) Aceitunas Verdes \"00\" Molanes x 2 Kg",
     "label": "Molanes",
-    "barcode": "BN"
+    "barcode": "7797283001116"
   },
   {
     "code": "370",
@@ -771,7 +754,8 @@ async function main() {
     "code": "7795786000117",
     "name": "(117) Saborizado Pimienta x Unid",
     "description": "(117) Saborizado Pimienta x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000117"
   },
   {
     "code": "7791218000663",
@@ -811,73 +795,85 @@ async function main() {
     "code": "7797283012211",
     "name": "(1221) Aceitunas Negras 00 Condim En Aceite x 2 kg",
     "description": "(1221) Aceitunas Negras 00 Condim En Aceite x 2 kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283012211"
   },
   {
     "code": "7798411850279",
     "name": "(1249) Aji dulce ahumado Art. Gourmet x 50gr",
     "description": "(1249) Aji dulce ahumado Art. Gourmet x 50gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850279"
   },
   {
     "code": "7798411850187",
     "name": "(1250) Albahaca Art. Gourmet x 13gr",
     "description": "(1250) Albahaca Art. Gourmet x 13gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850187"
   },
   {
     "code": "7798411850170",
     "name": "(1251) Romero Hoja Art. Gourmet x 17gr",
     "description": "(1251) Romero Hoja Art. Gourmet x 17gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850170"
   },
   {
     "code": "7798411850347",
     "name": "(1252) Tomillo Art. Gourmet x 15gr",
     "description": "(1252) Tomillo Art. Gourmet x 15gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850347"
   },
   {
     "code": "7798411850149",
     "name": "(1254) Perejil Art. Gourmet x 15gr",
     "description": "(1254) Perejil Art. Gourmet x 15gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850149"
   },
   {
     "code": "7798411850132",
     "name": "(1255) Laurel Art. Gourmet x 10gr",
     "description": "(1255) Laurel Art. Gourmet x 10gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850132"
   },
   {
     "code": "7798411850378",
     "name": "(1258) Pimentón dulce Art. Gourmet x 25gr",
     "description": "(1258) Pimentón dulce Art. Gourmet x 25gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850378"
   },
   {
     "code": "7798411850095",
     "name": "(1259) Aji dulce Art. Gourmet x 25gr",
     "description": "(1259) Aji dulce Art. Gourmet x 25gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850095"
   },
   {
     "code": "7791218124239",
     "name": "(126) Ravioles Cuatro Quesos Orali x 500 g",
     "description": "(126) Ravioles Cuatro Quesos Orali x 500 g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218124239"
   },
   {
     "code": "7798411850088",
     "name": "(1260) Ajo g.  Art. Gourmet x 25gr",
     "description": "(1260) Ajo g.  Art. Gourmet x 25gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850088"
   },
   {
     "code": "7798411850408",
     "name": "(1261) Pimienta negra Art. Gourmet x 25gr",
     "description": "(1261) Pimienta negra Art. Gourmet x 25gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850408"
   },
   {
     "code": "7797283001277",
@@ -897,7 +893,8 @@ async function main() {
     "code": "7797283001130",
     "name": "(130) Ac. Verdes Premium \"00\" Molanes x 380  g",
     "description": "(130) Ac. Verdes Premium \"00\" Molanes x 380  g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283001130"
   },
   {
     "code": "7791218000861",
@@ -943,32 +940,36 @@ async function main() {
     "code": "7798259430138",
     "name": "(138) Jugo Pura Frutta Manzana Roja x 1 L",
     "description": "(138) Jugo Pura Frutta Manzana Roja x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259430138"
   },
   {
     "code": "7791218123010",
     "name": "(140) Tapa Rotisera Hojaldre Alta Cocina x 625g",
     "description": "(140) Tapa Rotisera Hojaldre Alta Cocina x 625g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218123010"
   },
   {
     "code": "7797283003141",
     "name": "(141) Corazon Alcaucil Aceite Molanes x 220 g",
     "description": "(141) Corazon Alcaucil Aceite Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BP"
+    "barcode": "7797283003141"
   },
   {
     "code": "7791218123003",
     "name": "(141) Tapa Rotisera Criolla Alta Cocina x 625g",
     "description": "(141) Tapa Rotisera Criolla Alta Cocina x 625g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218123003"
   },
   {
     "code": "7797283006142",
     "name": "(142) Alcaparras en Vinagre x 65 grs Molanes",
     "description": "(142) Alcaparras en Vinagre x 65 grs Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283006142"
   },
   {
     "code": "137",
@@ -986,13 +987,15 @@ async function main() {
     "code": "7795786000148",
     "name": "(148) Saborizado Capresse x Unid",
     "description": "(148) Saborizado Capresse x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000148"
   },
   {
     "code": "7791218124055",
     "name": "(151) Tortillas Clasicas Luz Azul 12 u. x 440g",
     "description": "(151) Tortillas Clasicas Luz Azul 12 u. x 440g",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7791218124055"
   },
   {
     "code": "139",
@@ -1004,13 +1007,15 @@ async function main() {
     "code": "7795786000155",
     "name": "(155) Saborizado Aji x Unid",
     "description": "(155) Saborizado Aji x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000155"
   },
   {
     "code": "7798158630158",
     "name": "(158) Burratas x 200 grs",
     "description": "(158) Burratas x 200 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630158"
   },
   {
     "code": "7798013100697",
@@ -1030,13 +1035,15 @@ async function main() {
     "code": "7793913013207",
     "name": "(1627) Queso Crema Clasico Tregar x 190 g",
     "description": "(1627) Queso Crema Clasico Tregar x 190 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013207"
   },
   {
     "code": "7793913013214",
     "name": "(1628) Quesp Crema Light Tregar x 190 g",
     "description": "(1628) Quesp Crema Light Tregar x 190 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013214"
   },
   {
     "code": "7793913013238",
@@ -1070,13 +1077,15 @@ async function main() {
     "code": "7793913013368",
     "name": "(1695) Yogur Bebible Entero Durazno tregar x 900 g",
     "description": "(1695) Yogur Bebible Entero Durazno tregar x 900 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013368"
   },
   {
     "code": "7793913013375",
     "name": "(1696) Yogur Bebible Entero Arandano x 900 g",
     "description": "(1696) Yogur Bebible Entero Arandano x 900 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013375"
   },
   {
     "code": "140",
@@ -1088,19 +1097,22 @@ async function main() {
     "code": "7791218124703",
     "name": "(170) Sorrentinos Calabaza y Muzza Orali x 500g",
     "description": "(170) Sorrentinos Calabaza y Muzza Orali x 500g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218124703"
   },
   {
     "code": "7791218124710",
     "name": "(171) Sorrentinos Cuatro Quesos Orali x 500g",
     "description": "(171) Sorrentinos Cuatro Quesos Orali x 500g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218124710"
   },
   {
     "code": "7791218124727",
     "name": "(172) Sorrentinos Ricota y Esp. Orali x 500g",
     "description": "(172) Sorrentinos Ricota y Esp. Orali x 500g",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218124727"
   },
   {
     "code": "141",
@@ -1112,13 +1124,15 @@ async function main() {
     "code": "7795786000179",
     "name": "(179) Saborizado Oregano x Unid",
     "description": "(179) Saborizado Oregano x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000179"
   },
   {
     "code": "7795786000193",
     "name": "(193) Saborizado Finas Hierbas x Unid",
     "description": "(193) Saborizado Finas Hierbas x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000193"
   },
   {
     "code": "7793913013573",
@@ -1138,7 +1152,8 @@ async function main() {
     "code": "7793913013528",
     "name": "(1995) Yogur Entero Frutilla Tregar x 125 g",
     "description": "(1995) Yogur Entero Frutilla Tregar x 125 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013528"
   },
   {
     "code": "7793913013535",
@@ -1151,7 +1166,8 @@ async function main() {
     "code": "7793913013542",
     "name": "(1998) Yogur Entero Dulce De Leche Tregar x 125 g",
     "description": "(1998) Yogur Entero Dulce De Leche Tregar x 125 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013542"
   },
   {
     "code": "182",
@@ -1183,7 +1199,8 @@ async function main() {
     "code": "7793913013443",
     "name": "(2068) Crema de leche Doble crema x 350 cc",
     "description": "(2068) Crema de leche Doble crema x 350 cc",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013443"
   },
   {
     "code": "7793913013610",
@@ -1203,13 +1220,15 @@ async function main() {
     "code": "7798259439209",
     "name": "(209) Jugo Pura Frutta Manzana Organico x 1 L",
     "description": "(209) Jugo Pura Frutta Manzana Organico x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439209"
   },
   {
     "code": "7795786000209",
     "name": "(209) Saborizado Provenzal x Unid",
     "description": "(209) Saborizado Provenzal x Unid",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000209"
   },
   {
     "code": "7793913013634",
@@ -1248,7 +1267,8 @@ async function main() {
     "code": "7793913013474",
     "name": "(2111) Arroz C/Leche Canela x 180 g",
     "description": "(2111) Arroz C/Leche Canela x 180 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013474"
   },
   {
     "code": "7793913013597",
@@ -1261,19 +1281,22 @@ async function main() {
     "code": "7793913013603",
     "name": "(2113) Yogur Bebible Descremado Vainilla x 900 g",
     "description": "(2113) Yogur Bebible Descremado Vainilla x 900 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013603"
   },
   {
     "code": "7793913013559",
     "name": "(2114) Yogur Descremado Frutilla Tregar x 125 g",
     "description": "(2114) Yogur Descremado Frutilla Tregar x 125 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013559"
   },
   {
     "code": "7793913013566",
     "name": "(2115) Yogur Descremado Vainilla Tregar x 125 g",
     "description": "(2115) Yogur Descremado Vainilla Tregar x 125 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013566"
   },
   {
     "code": "7793913013641",
@@ -1293,13 +1316,15 @@ async function main() {
     "code": "7793913013719",
     "name": "(2144)  Queso Blanco Clasico Tregar x 290 g",
     "description": "(2144)  Queso Blanco Clasico Tregar x 290 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013719"
   },
   {
     "code": "7793913013726",
     "name": "(2145) Queso Blanco Light Tregar x 290 g",
     "description": "(2145) Queso Blanco Light Tregar x 290 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013726"
   },
   {
     "code": "7793913013689",
@@ -1313,31 +1338,35 @@ async function main() {
     "name": "(215) Aceitunas Verdes \"0\" Molanes x 2 Kg",
     "description": "(215) Aceitunas Verdes \"0\" Molanes x 2 Kg",
     "label": "Molanes",
-    "barcode": "BK"
+    "barcode": "7797283001215"
   },
   {
     "code": "7793913013788",
     "name": "(2153) Yogur Entero C/Frutas Anana tregar x 160 g",
     "description": "(2153) Yogur Entero C/Frutas Anana tregar x 160 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013788"
   },
   {
     "code": "7793913013795",
     "name": "(2154) Yogur Entero C/Frutas Mango tregar x 160 g",
     "description": "(2154) Yogur Entero C/Frutas Mango tregar x 160 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013795"
   },
   {
     "code": "7793913013757",
     "name": "(2155) Yogur Desc C/Frutas Frutilla Tregar x 160 g",
     "description": "(2155) Yogur Desc C/Frutas Frutilla Tregar x 160 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013757"
   },
   {
     "code": "7793913013764",
     "name": "(2156) Yogur Desc C/frutas Durazno x 160 g",
     "description": "(2156) Yogur Desc C/frutas Durazno x 160 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013764"
   },
   {
     "code": "7793913013771",
@@ -1378,7 +1407,8 @@ async function main() {
     "code": "7793913013733",
     "name": "(2173) Yogur Desc Anana Tregar x 160 gr",
     "description": "(2173) Yogur Desc Anana Tregar x 160 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913013733"
   },
   {
     "code": "7793913013818",
@@ -1391,25 +1421,29 @@ async function main() {
     "code": "7793913014020",
     "name": "(2175) Yogur Batido Con Cafe Tregar x 120 gr",
     "description": "(2175) Yogur Batido Con Cafe Tregar x 120 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014020"
   },
   {
     "code": "7793913014013",
     "name": "(2176) Yogur Batido Con Coco Rall. Tregar x 120 gr",
     "description": "(2176) Yogur Batido Con Coco Rall. Tregar x 120 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014013"
   },
   {
     "code": "7793913014006",
     "name": "(2177) Yogur Cascara De Limon Tregar x 120 gr",
     "description": "(2177) Yogur Cascara De Limon Tregar x 120 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014006"
   },
   {
     "code": "7798259439223",
     "name": "(223) Jugo Pura Frutta Manzana/Kiwi x 1 L",
     "description": "(223) Jugo Pura Frutta Manzana/Kiwi x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439223"
   },
   {
     "code": "7795165001223",
@@ -1422,25 +1456,29 @@ async function main() {
     "code": "7793913014075",
     "name": "(2231) Yogur Firme Entero Frutilla Tregar x 170 gr",
     "description": "(2231) Yogur Firme Entero Frutilla Tregar x 170 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014075"
   },
   {
     "code": "7793913014082",
     "name": "(2232) Yogur Firme Vainilla Tregar x 170 gr",
     "description": "(2232) Yogur Firme Vainilla Tregar x 170 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014082"
   },
   {
     "code": "7793913014105",
     "name": "(2240) Yogur Firme Descr Frutilla Tregar x 170 gr",
     "description": "(2240) Yogur Firme Descr Frutilla Tregar x 170 gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014105"
   },
   {
     "code": "7793913014112",
     "name": "(2241) Yogur Firme Descre Vainilla Tregar x 170gr",
     "description": "(2241) Yogur Firme Descre Vainilla Tregar x 170gr",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913014112"
   },
   {
     "code": "179",
@@ -1452,7 +1490,8 @@ async function main() {
     "code": "7793913001013",
     "name": "(225) Queso Mascarpone tregar  x 200 g",
     "description": "(225) Queso Mascarpone tregar  x 200 g",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913001013"
   },
   {
     "code": "178",
@@ -1483,7 +1522,7 @@ async function main() {
     "name": "(240) Pimientos Morron Natural Molanes x 220 g",
     "description": "(240) Pimientos Morron Natural Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BW"
+    "barcode": "7797283003240"
   },
   {
     "code": "156",
@@ -1503,7 +1542,7 @@ async function main() {
     "name": "(246) Aceitunas Verdes \"0\" Molanes x 220 grs.",
     "description": "(246) Aceitunas Verdes \"0\" Molanes x 220 grs.",
     "label": "Molanes",
-    "barcode": "BS"
+    "barcode": "7797283001246"
   },
   {
     "code": "7791218122914",
@@ -1537,7 +1576,8 @@ async function main() {
     "code": "7797283001260",
     "name": "(260) Aceitunas Verdes \"0\" Molanes Pote x 1 Kg",
     "description": "(260) Aceitunas Verdes \"0\" Molanes Pote x 1 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283001260"
   },
   {
     "code": "7791218000502",
@@ -1550,25 +1590,29 @@ async function main() {
     "code": "7791218000496",
     "name": "(261) Ñoquis Integral Y Semilla De Chia orali x 50",
     "description": "(261) Ñoquis Integral Y Semilla De Chia orali x 50",
-    "label": "Orali"
+    "label": "Orali",
+    "barcode": "7791218000496"
   },
   {
     "code": "7798077160262",
     "name": "(262) Membrillo Rubio Profecia x 650 g.",
     "description": "(262) Membrillo Rubio Profecia x 650 g.",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160262"
   },
   {
     "code": "7798077160262",
     "name": "(262) Membrillo Rubio Profecia x 650 g.",
     "description": "(262) Membrillo Rubio Profecia x 650 g.",
-    "label": "Dulces en lata"
+    "label": "Dulces en lata",
+    "barcode": "7798077160262"
   },
   {
     "code": "7791218124062",
     "name": "(262) Tortillas Light Luz Azul 12 u. x 440g",
     "description": "(262) Tortillas Light Luz Azul 12 u. x 440g",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7791218124062"
   },
   {
     "code": "130",
@@ -1580,7 +1624,8 @@ async function main() {
     "code": "7798134610273",
     "name": "(273) Queso Tipo Capricho x 150 grs",
     "description": "(273) Queso Tipo Capricho x 150 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610273"
   },
   {
     "code": "183",
@@ -1612,13 +1657,15 @@ async function main() {
     "code": "7797283001307",
     "name": "(307) Aceitunas Verdes Nro. 5 Balde x 5 Kg.",
     "description": "(307) Aceitunas Verdes Nro. 5 Balde x 5 Kg.",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283001307"
   },
   {
     "code": "7798259439308",
     "name": "(308) Jugo Pura Frutta Detox x 1 L",
     "description": "(308) Jugo Pura Frutta Detox x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439308"
   },
   {
     "code": "7793913001662",
@@ -1631,7 +1678,8 @@ async function main() {
     "code": "7795786000315",
     "name": "(315) Crema x 300 pote",
     "description": "(315) Crema x 300 pote",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000315"
   },
   {
     "code": "7798134980321",
@@ -1644,7 +1692,8 @@ async function main() {
     "code": "7797283003332",
     "name": "(332) Cerezas al Marraschino x 135 grs Molanes",
     "description": "(332) Cerezas al Marraschino x 135 grs Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283003332"
   },
   {
     "code": "153",
@@ -1657,7 +1706,7 @@ async function main() {
     "name": "(341) Ac. Negras \"0\" Condimentadas Molanes x 220 g",
     "description": "(341) Ac. Negras \"0\" Condimentadas Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BZ"
+    "barcode": "7797283012341"
   },
   {
     "code": "7798259439353",
@@ -1747,7 +1796,7 @@ async function main() {
     "name": "(410) Ac. Rellenas \"0\" Salmuera Molanes x 2 Kg",
     "description": "(410) Ac. Rellenas \"0\" Salmuera Molanes x 2 Kg",
     "label": "Molanes",
-    "barcode": "BM"
+    "barcode": "7797283213410"
   },
   {
     "code": "195",
@@ -1759,7 +1808,8 @@ async function main() {
     "code": "7795786000414",
     "name": "(414) Dulce Familiar x 1 kg Luz Azul",
     "description": "(414) Dulce Familiar x 1 kg Luz Azul",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000414"
   },
   {
     "code": "148",
@@ -1771,89 +1821,99 @@ async function main() {
     "code": "7791108031418",
     "name": "(418) Queso Reggianito en Hebras x 135 g",
     "description": "(418) Queso Reggianito en Hebras x 135 g",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7791108031418"
   },
   {
     "code": "7795786000421",
     "name": "(421) Dulce Familiar sin TACC x 400 Luz Azul",
     "description": "(421) Dulce Familiar sin TACC x 400 Luz Azul",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000421"
   },
   {
     "code": "7797283054426",
     "name": "(426) Ac. Verdes Desc. \"00\" Molanes x 320g",
     "description": "(426) Ac. Verdes Desc. \"00\" Molanes x 320g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283054426"
   },
   {
     "code": "7797283005442",
     "name": "(442) Aceitunas Verdes Desc. Molanes x 1.5 Kg",
     "description": "(442) Aceitunas Verdes Desc. Molanes x 1.5 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005442"
   },
   {
     "code": "7795786000445",
     "name": "(445) Dulce Repostero sin TACC x 400 Luz Azul",
     "description": "(445) Dulce Repostero sin TACC x 400 Luz Azul",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000445"
   },
   {
     "code": "7797283002458",
     "name": "(458) Ac. Negras Griega Aceite Molanes x 220 g",
     "description": "(458) Ac. Negras Griega Aceite Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BY"
+    "barcode": "7797283002458"
   },
   {
     "code": "7797283213465",
     "name": "(465) Ac. Verdes Rellenas Molanes Pote x 1 Kg",
     "description": "(465) Ac. Verdes Rellenas Molanes Pote x 1 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283213465"
   },
   {
     "code": "7797283005466",
     "name": "(466) Aceitunas Verdes Desc. Molanes x 170 g",
     "description": "(466) Aceitunas Verdes Desc. Molanes x 170 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005466"
   },
   {
     "code": "7797283213472",
     "name": "(472) Ac. Rellena \"00\" Salmuera Molanes x 430g",
     "description": "(472) Ac. Rellena \"00\" Salmuera Molanes x 430g",
     "label": "Molanes",
-    "barcode": "CA"
+    "barcode": "7797283213472"
   },
   {
     "code": "7797283005473",
     "name": "(473) Ac. Verdes Desc. Molanes Pote x 800 grs",
     "description": "(473) Ac. Verdes Desc. Molanes Pote x 800 grs",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005473"
   },
   {
     "code": "7797283003479",
     "name": "(479) Ac. Rellenas \"0\" Salmuera Molanes x 220 g",
     "description": "(479) Ac. Rellenas \"0\" Salmuera Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BX"
+    "barcode": "7797283003479"
   },
   {
     "code": "7797283003493",
     "name": "(493) Aceitunas Verdes Rellena Molanes x 100 g",
     "description": "(493) Aceitunas Verdes Rellena Molanes x 100 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283003493"
   },
   {
     "code": "7797283005497",
     "name": "(497) Aceitunas Verdes Desc. Molanes x 80 g",
     "description": "(497) Aceitunas Verdes Desc. Molanes x 80 g",
     "label": "Molanes",
-    "barcode": "BV"
+    "barcode": "7797283005497"
   },
   {
     "code": "7798013108068",
     "name": "(500) Salamin Tandilero picante ATM x 145 gr",
     "description": "(500) Salamin Tandilero picante ATM x 145 gr",
-    "label": "Fiambres Cagnoli"
+    "label": "Fiambres Cagnoli",
+    "barcode": "7798013108068"
   },
   {
     "code": "501",
@@ -1872,62 +1932,71 @@ async function main() {
     "code": "7798013108075",
     "name": "(503) Salamin a las F/Hierbas ATM Cagnoli x 145 gr",
     "description": "(503) Salamin a las F/Hierbas ATM Cagnoli x 145 gr",
-    "label": "Fiambres Cagnoli"
+    "label": "Fiambres Cagnoli",
+    "barcode": "7798013108075"
   },
   {
     "code": "7798259439506",
     "name": "(506) Jugo Pura Frutta MultiFruta x 1 L",
     "description": "(506) Jugo Pura Frutta MultiFruta x 1 L",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439506"
   },
   {
     "code": "7797283003516",
     "name": "(516) Pepinos Agridulces x 2 Kg Molanes",
     "description": "(516) Pepinos Agridulces x 2 Kg Molanes",
     "label": "Molanes",
-    "barcode": "BO"
+    "barcode": "7797283003516"
   },
   {
     "code": "7798411850590",
     "name": "(5200) Chimichurri Ahumado Locos x el Asado 45 gr",
     "description": "(5200) Chimichurri Ahumado Locos x el Asado 45 gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850590"
   },
   {
     "code": "7798411850583",
     "name": "(5201) Chimichurri Gourmet Locos x El Asado x 45gr",
     "description": "(5201) Chimichurri Gourmet Locos x El Asado x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850583"
   },
   {
     "code": "7797283002533",
     "name": "(533) Anchoa en Aceite Molanes x 120 grs",
     "description": "(533) Anchoa en Aceite Molanes x 120 grs",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002533"
   },
   {
     "code": "7798259439537",
     "name": "(537) Jugo Pura Frutta Naranja Salustiana x 1 lt",
     "description": "(537) Jugo Pura Frutta Naranja Salustiana x 1 lt",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439537"
   },
   {
     "code": "7797283002540",
     "name": "(540) Anchoa en Aceite Molanes x 70 grs",
     "description": "(540) Anchoa en Aceite Molanes x 70 grs",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002540"
   },
   {
     "code": "7797283005541",
     "name": "(541) Pasta De Ac. Verdes Molanes  x 150 gr",
     "description": "(541) Pasta De Ac. Verdes Molanes  x 150 gr",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005541"
   },
   {
     "code": "7797283003547",
     "name": "(547) Pepinos Agridulces x 220 grs Molanes",
     "description": "(547) Pepinos Agridulces x 220 grs Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283003547"
   },
   {
     "code": "7798013107726",
@@ -1940,31 +2009,36 @@ async function main() {
     "code": "7798013108181",
     "name": "(559) Mortadela Con Pistachos Cagnoli x 250 gr",
     "description": "(559) Mortadela Con Pistachos Cagnoli x 250 gr",
-    "label": "Fiambres Cagnoli"
+    "label": "Fiambres Cagnoli",
+    "barcode": "7798013108181"
   },
   {
     "code": "7797283002571",
     "name": "(571) Anchoa en Aceite Sobre x 3 Molanes",
     "description": "(571) Anchoa en Aceite Sobre x 3 Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002571"
   },
   {
     "code": "7798259439582",
     "name": "(582) Jugo Pura Frutta Naranja x 200 ml",
     "description": "(582) Jugo Pura Frutta Naranja x 200 ml",
-    "label": "Purafrutta"
+    "label": "Purafrutta",
+    "barcode": "7798259439582"
   },
   {
     "code": "7797283005848",
     "name": "(593) Champignones al Natural Molanes x 210 g",
     "description": "(593) Champignones al Natural Molanes x 210 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005848"
   },
   {
     "code": "7797283006043",
     "name": "(604) Aceitunas Verdes Rodajas molanes x 170 gr",
     "description": "(604) Aceitunas Verdes Rodajas molanes x 170 gr",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283006043"
   },
   {
     "code": "7798259439605",
@@ -1984,7 +2058,8 @@ async function main() {
     "code": "7797283002618",
     "name": "(618) Pickles en Vinagre Molanes x 2 Kg",
     "description": "(618) Pickles en Vinagre Molanes x 2 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002618"
   },
   {
     "code": "7798259439629",
@@ -1997,50 +2072,57 @@ async function main() {
     "code": "7795786000629",
     "name": "(629) Miel x 1 Kg Luz Azul",
     "description": "(629) Miel x 1 Kg Luz Azul",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000629"
   },
   {
     "code": "7795786000636",
     "name": "(636) Alfajor Maicena Luz Azul x 50 grs",
     "description": "(636) Alfajor Maicena Luz Azul x 50 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000636"
   },
   {
     "code": "7797283005640",
     "name": "(640) Pasta De Ac. Negras Molanes x 150 gr",
     "description": "(640) Pasta De Ac. Negras Molanes x 150 gr",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005640"
   },
   {
     "code": "7795786000643",
     "name": "(643) Alfajor Chocolate Luz Azul x 50 grs",
     "description": "(643) Alfajor Chocolate Luz Azul x 50 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000643"
   },
   {
     "code": "7797283002649",
     "name": "(649) Pickles en Vinagre Molanes x 220 g",
     "description": "(649) Pickles en Vinagre Molanes x 220 g",
     "label": "Molanes",
-    "barcode": "BR"
+    "barcode": "7797283002649"
   },
   {
     "code": "7795786000650",
     "name": "(650) Miel x 1/2 Kg Luz Azul",
     "description": "(650) Miel x 1/2 Kg Luz Azul",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000650"
   },
   {
     "code": "7795786000681",
     "name": "(681) Queso Cream Luz Azul x 300 g",
     "description": "(681) Queso Cream Luz Azul x 300 g",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000681"
   },
   {
     "code": "7795786000698",
     "name": "(698) Queso Cream Light Luz Azul x 300 g",
     "description": "(698) Queso Cream Light Luz Azul x 300 g",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000698"
   },
   {
     "code": "7791218123737",
@@ -2060,7 +2142,8 @@ async function main() {
     "code": "7798411850057",
     "name": "(721) Sal Marina 7 especias Art. Gourmet x 120gr",
     "description": "(721) Sal Marina 7 especias Art. Gourmet x 120gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850057"
   },
   {
     "code": "7798259439728",
@@ -2079,13 +2162,15 @@ async function main() {
     "code": "7795786000742",
     "name": "(742) Queso Rallado Luz Azul x 100gr",
     "description": "(742) Queso Rallado Luz Azul x 100gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000742"
   },
   {
     "code": "7797283002748",
     "name": "(748) Ajies Despuntado Vinagre Molanes x 125 g",
     "description": "(748) Ajies Despuntado Vinagre Molanes x 125 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002748"
   },
   {
     "code": "7798013106910",
@@ -2105,13 +2190,15 @@ async function main() {
     "code": "7795786000797",
     "name": "(797) Manteca Luz Azul x 200 gr",
     "description": "(797) Manteca Luz Azul x 200 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000797"
   },
   {
     "code": "7797283002816",
     "name": "(816) Pepinillos en Vinagre x 2 Kg Molanes",
     "description": "(816) Pepinillos en Vinagre x 2 Kg Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002816"
   },
   {
     "code": "7793913000504",
@@ -2132,32 +2219,35 @@ async function main() {
     "name": "(847) Pepinillos en Vinagre x 220 grs Molanes",
     "description": "(847) Pepinillos en Vinagre x 220 grs Molanes",
     "label": "Molanes",
-    "barcode": "BT"
+    "barcode": "7797283002847"
   },
   {
     "code": "7797830013906",
     "name": "(906) Aceitunas Verdes Nro. 5 Molanes x 100 g",
     "description": "(906) Aceitunas Verdes Nro. 5 Molanes x 100 g",
     "label": "Molanes",
-    "barcode": "BU"
+    "barcode": "7797830013906"
   },
   {
     "code": "7797283005930",
     "name": "(930) Champignones al Natural Molanes x 210 g",
     "description": "(930) Champignones al Natural Molanes x 210 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283005930"
   },
   {
     "code": "7797283002946",
     "name": "(946) Cebollitas en Vinagre x 220 grs Molanes",
     "description": "(946) Cebollitas en Vinagre x 220 grs Molanes",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283002946"
   },
   {
     "code": "7797283001949",
     "name": "(949) Aceitunas Negras \"0\" Molanes x 220 grs",
     "description": "(949) Aceitunas Negras \"0\" Molanes x 220 grs",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283001949"
   },
   {
     "code": "346",
@@ -2169,25 +2259,29 @@ async function main() {
     "code": "7797283551963",
     "name": "(963) Aceitunas Negras \"0\" Molanes Pote x 1 Kg",
     "description": "(963) Aceitunas Negras \"0\" Molanes Pote x 1 Kg",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283551963"
   },
   {
     "code": "7798411850316",
     "name": "(966) Sal Parrillera Gourmet x 120",
     "description": "(966) Sal Parrillera Gourmet x 120",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850316"
   },
   {
     "code": "7798411850323",
     "name": "(967) Sal Patagonica Gourmet x 120gr",
     "description": "(967) Sal Patagonica Gourmet x 120gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850323"
   },
   {
     "code": "7798411850231",
     "name": "(974) Zanahorias al Curry Art. Gourmet x 45gr",
     "description": "(974) Zanahorias al Curry Art. Gourmet x 45gr",
-    "label": "Locos por el Asado"
+    "label": "Locos por el Asado",
+    "barcode": "7798411850231"
   },
   {
     "code": "7791218122808",
@@ -2200,13 +2294,15 @@ async function main() {
     "code": "7797283001994",
     "name": "(994) Aceitunas Negras \"0\" Molanes x 100 g",
     "description": "(994) Aceitunas Negras \"0\" Molanes x 100 g",
-    "label": "Molanes"
+    "label": "Molanes",
+    "barcode": "7797283001994"
   },
   {
     "code": "7793913012996",
     "name": "(996) Leche Descremada UAT tregar",
     "description": "(996) Leche Descremada UAT tregar",
-    "label": "Tregar"
+    "label": "Tregar",
+    "barcode": "7793913012996"
   },
   {
     "code": "644",
@@ -2395,31 +2491,36 @@ async function main() {
     "code": "7798134610402",
     "name": "Brie Cabra x 250 grs",
     "description": "Brie Cabra x 250 grs",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610402"
   },
   {
     "code": "7798158630264",
     "name": "Burratina Capresse x 150 gr",
     "description": "Burratina Capresse x 150 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630264"
   },
   {
     "code": "7798158630271",
     "name": "Burratina Clasica x 150 gr",
     "description": "Burratina Clasica x 150 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630271"
   },
   {
     "code": "7798158630226",
     "name": "Burratina Tartufo x 150 gr",
     "description": "Burratina Tartufo x 150 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630226"
   },
   {
     "code": "7798158630240",
     "name": "Burratina Tartufo x 150 gr",
     "description": "Burratina Tartufo x 150 gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798158630240"
   },
   {
     "code": "609",
@@ -2833,13 +2934,15 @@ async function main() {
     "code": "779064500342",
     "name": "CARACAS - Anchoa en aceite x 170 grs",
     "description": "CARACAS - Anchoa en aceite x 170 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "779064500342"
   },
   {
     "code": "7790645003421",
     "name": "CARACAS - Anchoa en aceite x 170 grs",
     "description": "CARACAS - Anchoa en aceite x 170 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7790645003421"
   },
   {
     "code": "061",
@@ -2881,7 +2984,8 @@ async function main() {
     "code": "7798060852389",
     "name": "Crema tonadita x 4 lts",
     "description": "Crema tonadita x 4 lts",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852389"
   },
   {
     "code": "036",
@@ -2893,12 +2997,6 @@ async function main() {
     "code": "051",
     "name": "Cremoso Ahora! x Kg",
     "description": "Cremoso Ahora! x Kg",
-    "label": "Luz Azul y quesos"
-  },
-  {
-    "code": "001",
-    "name": "Cremoso Luz Azul x Kg",
-    "description": "Cremoso Luz Azul x Kg",
     "label": "Luz Azul y quesos"
   },
   {
@@ -2966,7 +3064,8 @@ async function main() {
     "code": "7795165000141",
     "name": "FRIOLIM - Salchicha Alemana Copetín x 25 uds (141)",
     "description": "FRIOLIM - Salchicha Alemana Copetín x 25 uds (141)",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7795165000141"
   },
   {
     "code": "7795165000165",
@@ -2979,7 +3078,8 @@ async function main() {
     "code": "7795165000172",
     "name": "FRIOLIM - Salchicha Alemana x 5 uds (172)",
     "description": "FRIOLIM - Salchicha Alemana x 5 uds (172)",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7795165000172"
   },
   {
     "code": "7795165000127",
@@ -3023,31 +3123,36 @@ async function main() {
     "code": "7794000006188",
     "name": "HELLMANS - Ketchup x 250 grs",
     "description": "HELLMANS - Ketchup x 250 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7794000006188"
   },
   {
     "code": "7794000006065",
     "name": "HELLMANS - Mayonesa Clásica x 237 grs",
     "description": "HELLMANS - Mayonesa Clásica x 237 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7794000006065"
   },
   {
     "code": "7794000006072",
     "name": "HELLMANS - Mayonesa Clásica x 475 grs",
     "description": "HELLMANS - Mayonesa Clásica x 475 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7794000006072"
   },
   {
     "code": "7794000007093",
     "name": "HELLMANS - Mayonesa liviana x 237 grs",
     "description": "HELLMANS - Mayonesa liviana x 237 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7794000007093"
   },
   {
     "code": "7798383010176",
     "name": "Hummus Babaganoush Kamar x 230 grs",
     "description": "Hummus Babaganoush Kamar x 230 grs",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798383010176"
   },
   {
     "code": "7798383010121",
@@ -3429,25 +3534,29 @@ async function main() {
     "code": "7795786000889",
     "name": "Power mix Energia x 100g",
     "description": "Power mix Energia x 100g",
-    "label": "Mani y frutos secos"
+    "label": "Mani y frutos secos",
+    "barcode": "7795786000889"
   },
   {
     "code": "7795786000896",
     "name": "Power mix Fibra x 100g",
     "description": "Power mix Fibra x 100g",
-    "label": "Mani y frutos secos"
+    "label": "Mani y frutos secos",
+    "barcode": "7795786000896"
   },
   {
     "code": "7795786000902",
     "name": "Power mix Natural x 100g",
     "description": "Power mix Natural x 100g",
-    "label": "Mani y frutos secos"
+    "label": "Mani y frutos secos",
+    "barcode": "7795786000902"
   },
   {
     "code": "7795786000919",
     "name": "Power mix Runner x 100g",
     "description": "Power mix Runner x 100g",
-    "label": "Mani y frutos secos"
+    "label": "Mani y frutos secos",
+    "barcode": "7795786000919"
   },
   {
     "code": "752",
@@ -3478,13 +3587,15 @@ async function main() {
     "code": "7798077160118",
     "name": "PROFECIA - Batatitas en Almibar x 450grs",
     "description": "PROFECIA - Batatitas en Almibar x 450grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160118"
   },
   {
     "code": "7798077160385",
     "name": "PROFECIA - Bocadito de membrillo x und",
     "description": "PROFECIA - Bocadito de membrillo x und",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160385"
   },
   {
     "code": "738",
@@ -3497,13 +3608,15 @@ async function main() {
     "code": "7798077160569",
     "name": "PROFECIA - Jalea de Membrillo x 450 grs",
     "description": "PROFECIA - Jalea de Membrillo x 450 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160569"
   },
   {
     "code": "7798185030198",
     "name": "PROFECIA - Membrillo al natural x 450 grs",
     "description": "PROFECIA - Membrillo al natural x 450 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798185030198"
   },
   {
     "code": "737",
@@ -3515,25 +3628,29 @@ async function main() {
     "code": "7798077160149",
     "name": "PROFECIA - Mermelada membrillo x 450 grs",
     "description": "PROFECIA - Mermelada membrillo x 450 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160149"
   },
   {
     "code": "7798077160606",
     "name": "PROFECIA - Mermelada Tomate x 450 grs",
     "description": "PROFECIA - Mermelada Tomate x 450 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160606"
   },
   {
     "code": "7798077160996",
     "name": "PROFECIA - Quinotos x 450 grs",
     "description": "PROFECIA - Quinotos x 450 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160996"
   },
   {
     "code": "7798077160576",
     "name": "PROFECIA - Zapallitos en Almibar 450grs",
     "description": "PROFECIA - Zapallitos en Almibar 450grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798077160576"
   },
   {
     "code": "857",
@@ -3582,145 +3699,169 @@ async function main() {
     "code": "7798187212370",
     "name": "QUENTO - Batatas Cebolla Caramelizada x 70 grs",
     "description": "QUENTO - Batatas Cebolla Caramelizada x 70 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187212370"
   },
   {
     "code": "7798187212356",
     "name": "QUENTO - Batatas Crema de Roquefort x 70 grs",
     "description": "QUENTO - Batatas Crema de Roquefort x 70 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187212356"
   },
   {
     "code": "7798187212363",
     "name": "QUENTO - Batatas Paprika Ahumada x 70 grs",
     "description": "QUENTO - Batatas Paprika Ahumada x 70 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187212363"
   },
   {
     "code": "7798187211403",
     "name": "QUENTO - Batatas x 40 grs",
     "description": "QUENTO - Batatas x 40 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211403"
   },
   {
     "code": "7798187211892",
     "name": "QUENTO - Batatas x 75 grs",
     "description": "QUENTO - Batatas x 75 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211892"
   },
   {
     "code": "7798187210567",
     "name": "QUENTO - Batatas x 80 grs",
     "description": "QUENTO - Batatas x 80 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187210567"
   },
   {
     "code": "7798187210048",
     "name": "QUENTO - Mega queso x 50 grs",
     "description": "QUENTO - Mega queso x 50 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187210048"
   },
   {
     "code": "7798187211939",
     "name": "QUENTO - Nachos picante x 80 grs",
     "description": "QUENTO - Nachos picante x 80 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211939"
   },
   {
     "code": "7798187211953",
     "name": "QUENTO - Nachos sabor guacamole x 90 grs",
     "description": "QUENTO - Nachos sabor guacamole x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211953"
   },
   {
     "code": "7798187211465",
     "name": "QUENTO - Nachos x 90 grs",
     "description": "QUENTO - Nachos x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211465"
   },
   {
     "code": "7798187211229",
     "name": "QUENTO - Palitos sabor cheddar",
     "description": "QUENTO - Palitos sabor cheddar",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211229"
   },
   {
     "code": "7798187211212",
     "name": "QUENTO - Palitos sabor panceta x 90 grs",
     "description": "QUENTO - Palitos sabor panceta x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211212"
   },
   {
     "code": "7798187210529",
     "name": "QUENTO - Papas cheddar x 40 grs",
     "description": "QUENTO - Papas cheddar x 40 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187210529"
   },
   {
     "code": "7798187211311",
     "name": "QUENTO - Papas clasicas x 100 grs",
     "description": "QUENTO - Papas clasicas x 100 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211311"
   },
   {
     "code": "7798187211328",
     "name": "QUENTO - Papas fritas asado criollo x 90 grs",
     "description": "QUENTO - Papas fritas asado criollo x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211328"
   },
   {
     "code": "7798187211786",
     "name": "QUENTO - Papas fritas barbacoa x 90 grs",
     "description": "QUENTO - Papas fritas barbacoa x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211786"
   },
   {
     "code": "7798187211298",
     "name": "QUENTO - Papas fritas cheddar x90 grs",
     "description": "QUENTO - Papas fritas cheddar x90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211298"
   },
   {
     "code": "7798187211649",
     "name": "QUENTO - Papas fritas crema y ciboulette x 45 grs",
     "description": "QUENTO - Papas fritas crema y ciboulette x 45 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211649"
   },
   {
     "code": "7798187211427",
     "name": "QUENTO - Papas Fritas Limón x 90 grs",
     "description": "QUENTO - Papas Fritas Limón x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211427"
   },
   {
     "code": "7798187212165",
     "name": "QUENTO - Papas fritas mostaza x 82 grs",
     "description": "QUENTO - Papas fritas mostaza x 82 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187212165"
   },
   {
     "code": "7798187211564",
     "name": "QUENTO - Papas fritas mostaza x 90 grs",
     "description": "QUENTO - Papas fritas mostaza x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211564"
   },
   {
     "code": "7798187211281",
     "name": "QUENTO - Papas jamon serrano x 90 grs",
     "description": "QUENTO - Papas jamon serrano x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211281"
   },
   {
     "code": "7798187211304",
     "name": "QUENTO - Papas ketchup x 90 grs",
     "description": "QUENTO - Papas ketchup x 90 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211304"
   },
   {
     "code": "7798187211946",
     "name": "QUENTO - Papas Picante x 70 grs",
     "description": "QUENTO - Papas Picante x 70 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798187211946"
   },
   {
     "code": "017",
@@ -3732,7 +3873,8 @@ async function main() {
     "code": "7798134610396",
     "name": "Queso Camembert de Cabra x 100gr",
     "description": "Queso Camembert de Cabra x 100gr",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7798134610396"
   },
   {
     "code": "013",
@@ -3770,31 +3912,36 @@ async function main() {
     "code": "7798060852426",
     "name": "Queso Patagonia Clasico Tonadita  x 3 kg",
     "description": "Queso Patagonia Clasico Tonadita  x 3 kg",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852426"
   },
   {
     "code": "7798060854345",
     "name": "Queso Patagonia Clasico Tonadita x 180 gr",
     "description": "Queso Patagonia Clasico Tonadita x 180 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060854345"
   },
   {
     "code": "7798060852679",
     "name": "Queso Patagonia Clasico Tonadita x 20 g",
     "description": "Queso Patagonia Clasico Tonadita x 20 g",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852679"
   },
   {
     "code": "7798060853409",
     "name": "Queso Patagonia Clasico Tonadita x 200 gr",
     "description": "Queso Patagonia Clasico Tonadita x 200 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060853409"
   },
   {
     "code": "7798060852907",
     "name": "Queso Patagonia Light Tonadita x 20 gr",
     "description": "Queso Patagonia Light Tonadita x 20 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852907"
   },
   {
     "code": "7798060853379",
@@ -3807,7 +3954,8 @@ async function main() {
     "code": "7798060852730",
     "name": "Queso Patagonia Sushi Tonadita x 3 kg",
     "description": "Queso Patagonia Sushi Tonadita x 3 kg",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852730"
   },
   {
     "code": "023",
@@ -3861,7 +4009,8 @@ async function main() {
     "code": "7795165001421",
     "name": "Salchicha Copetin con Piel Friolim",
     "description": "Salchicha Copetin con Piel Friolim",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7795165001421"
   },
   {
     "code": "7795165001391",
@@ -3874,7 +4023,8 @@ async function main() {
     "code": "7795786000728",
     "name": "Salsa Cheddar Luz Azul x 3 Kg",
     "description": "Salsa Cheddar Luz Azul x 3 Kg",
-    "label": "Luz Azul y quesos"
+    "label": "Luz Azul y quesos",
+    "barcode": "7795786000728"
   },
   {
     "code": "020",
@@ -3904,7 +4054,8 @@ async function main() {
     "code": "7794000006478",
     "name": "Savora x 250 grs",
     "description": "Savora x 250 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7794000006478"
   },
   {
     "code": "788070700630",
@@ -3964,55 +4115,64 @@ async function main() {
     "code": "7798125810767",
     "name": "TOSTEX - Cintita Cheddar",
     "description": "TOSTEX - Cintita Cheddar",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125810767"
   },
   {
     "code": "7798125811436",
     "name": "TOSTEX - Cintitas Anchas Oliva",
     "description": "TOSTEX - Cintitas Anchas Oliva",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125811436"
   },
   {
     "code": "7798125810361",
     "name": "TOSTEX - Cintitas Cebolla",
     "description": "TOSTEX - Cintitas Cebolla",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125810361"
   },
   {
     "code": "7798125810521",
     "name": "TOSTEX - Cintitas Jamón",
     "description": "TOSTEX - Cintitas Jamón",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125810521"
   },
   {
     "code": "7798125811405",
     "name": "TOSTEX - Cintitas Pancho",
     "description": "TOSTEX - Cintitas Pancho",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125811405"
   },
   {
     "code": "7798125811214",
     "name": "TOSTEX - Cintitas Picante",
     "description": "TOSTEX - Cintitas Picante",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125811214"
   },
   {
     "code": "7798125810958",
     "name": "TOSTEX - Cintitas Provoleta",
     "description": "TOSTEX - Cintitas Provoleta",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125810958"
   },
   {
     "code": "7798125810965",
     "name": "TOSTEX - Cintitas Salame",
     "description": "TOSTEX - Cintitas Salame",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7798125810965"
   },
   {
     "code": "7793313013672",
     "name": "TREGAR - Ricotta Light x 290 grs",
     "description": "TREGAR - Ricotta Light x 290 grs",
-    "label": "Productos Propios"
+    "label": "Productos Propios",
+    "barcode": "7793313013672"
   },
   {
     "code": "311",
@@ -4024,7 +4184,8 @@ async function main() {
     "code": "7798060853010",
     "name": "Untable Azul Tonadita x 180 gr",
     "description": "Untable Azul Tonadita x 180 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060853010"
   },
   {
     "code": "7798060853119",
@@ -4037,7 +4198,8 @@ async function main() {
     "code": "7798060853003",
     "name": "Untable Clasico Tonadita x 180 gr",
     "description": "Untable Clasico Tonadita x 180 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060853003"
   },
   {
     "code": "7798060854017",
@@ -4050,13 +4212,15 @@ async function main() {
     "code": "7798060853034",
     "name": "Untable Gruyere Tonadita x180 gr",
     "description": "Untable Gruyere Tonadita x180 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060853034"
   },
   {
     "code": "7798060852990",
     "name": "Untable Jamon Tonadita x 180 gr",
     "description": "Untable Jamon Tonadita x 180 gr",
-    "label": "Otros de terceros"
+    "label": "Otros de terceros",
+    "barcode": "7798060852990"
   },
   {
     "code": "714604177456",
@@ -4134,17 +4298,24 @@ async function main() {
   }
 ]
 
+  const seenCodes = new Set<string>();
+  const seenBarcodes = new Set<string>();
+  let created = 0;
   for (const productData of products) {
+    if (seenCodes.has(productData.code)) continue;
+    if (productData.barcode && seenBarcodes.has(productData.barcode)) continue;
+    seenCodes.add(productData.code);
+    if (productData.barcode) seenBarcodes.add(productData.barcode);
     await prisma.product.upsert({
       where: { code: productData.code },
       update: { description: productData.description, label: productData.label, barcode: productData.barcode },
       create: { ...productData, isActive: true },
     });
+    created++;
   }
-  console.log(`✅ ${products.length} productos creados`);
+  console.log(`✅ ${created} productos creados (de ${products.length} en lista)`);
 
   console.log("\n🎉 Seed completado exitosamente!");
-  console.log("📧 Login Super Admin: ruben@luzazul.com / LuzAzul2026!");
 }
 
 main()
