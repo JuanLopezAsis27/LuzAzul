@@ -1,5 +1,6 @@
 # Sistema Luz Azul — Control de Stock
 
+
 Sistema integral de control de stock para la cadena Luz Azul. Permite registrar mermas, donaciones y consumo interno (refrigerio) por sucursal, con historial, reportes y exportación Excel.
 
 ## Quick Start
