@@ -30,7 +30,8 @@ COPY --from=builder /app/prisma ./prisma
 # server deps Turbopack bundles into chunks and leaves unrequireable. Migrate
 # and seed run with `-w /opt/prisma-cli`, resolving modules from this directory.
 RUN npm install --prefix /opt/prisma-cli \
-    prisma@7.8.0 @prisma/client@7.8.0 @prisma/adapter-pg@7.8.0 bcryptjs@2.4.3
+    prisma@7.8.0 @prisma/client@7.8.0 @prisma/adapter-pg@7.8.0 \
+    bcryptjs@2.4.3 jiti@2.4.2 pg@8.13.1
 COPY --from=builder /app/prisma /opt/prisma-cli/prisma
 COPY --from=builder /app/prisma.config.ts /opt/prisma-cli/prisma.config.ts
 RUN cd /opt/prisma-cli && npx prisma generate
