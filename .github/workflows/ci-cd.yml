@@ -87,8 +87,12 @@ jobs:
 
             sleep 5
 
-            docker compose run --rm -T \
+            docker compose run --rm -T -w /opt/prisma-cli \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               app npx prisma migrate deploy
+
+            docker compose run --rm -T -w /opt/prisma-cli \
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              app npx prisma db seed
 
             docker image prune -a -f --filter "until=168h"
